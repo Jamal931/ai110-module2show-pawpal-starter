@@ -1,16 +1,45 @@
 # PawPal+ Project Reflection
 
 ## 1. System Design
+Enter basic owner and pet information.
+Add and edit pet care tasks (duration, priority, etc.).
+Generate and view a daily care plan/schedule based on constraints.
+
 
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+Ans:
+
+I chose these main classes and responsibilities:
+
+- `Owner`
+  - Holds owner-specific information like `name`, `preferences`, and `constraints`
+  - Responsible for tracking available time, preferences, and any scheduling constraints that affect the day
+
+- `Pet`
+  - Holds pet-specific information like `name`, `species`, `age`, and `needs`
+  - Responsible for representing the pet’s care requirements and any species-specific behavior
+
+- `Task`
+  - Holds task details like `title`, `duration_minutes`, `priority`, `category`, `deadline`, and `notes`
+  - Responsible for representing a single care action, updating its properties, and exposing whether it is required today
+
+- `Schedule`
+  - Holds a daily plan with `date`, ordered `tasks`, and an `explanation`
+  - Responsible for building the scheduled task list, calculating total time, formatting the output, and explaining the plan
+
+- `Scheduler`
+  - Holds the planning logic with references to `Owner`, `Pet`, `tasks`, and `time_budget`
+  - Responsible for ranking tasks, applying constraints, generating the daily schedule, and explaining why tasks were chosen
 - What classes did you include, and what responsibilities did you assign to each?
 
 **b. Design changes**
 
-- Did your design change during implementation?
+- Did your design change during implementation? YES 
 - If yes, describe at least one change and why you made it.
+Ans: so Owner stores name, preferences, constraints, and pets
+Responsible for owner-level data like available scheduling time and preference updates. it can also associate pets with the owner
 
 ---
 
@@ -23,8 +52,8 @@
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+- The scheduler only checks for exact start-time conflicts rather than detecting overlapping durations.
+- This tradeoff is reasonable because it keeps the logic lightweight and still catches the most obvious schedule clashes in a simple pet care app.
 
 ---
 

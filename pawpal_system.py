@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from typing import Dict, List, Optional
 
 
@@ -13,6 +13,8 @@ class Task:
     category: Optional[str] = None
     frequency: Optional[str] = None
     deadline: Optional[str] = None
+    due_date: Optional[date] = None
+    start_time: Optional[str] = None
     notes: Optional[str] = None
     completed: bool = False
     pet: Optional["Pet"] = None
@@ -30,15 +32,43 @@ class Task:
         """Return a one-line description of the task."""
         status = "completed" if self.completed else "pending"
         frequency = f"/{self.frequency}" if self.frequency else ""
-        return f"{self.title} ({self.duration_minutes}m){frequency} [{self.priority}] - {status}"
+        time_text = f" at {self.start_time}" if self.start_time else ""
+        due_text = f" due {self.due_date.isoformat()}" if self.due_date else ""
+        return f"{self.title} ({self.duration_minutes}m){frequency}{time_text}{due_text} [{self.priority}] - {status}"
 
     def is_required_today(self) -> bool:
         """Return whether the task still needs to be done today."""
-        return not self.completed
+        if self.completed:
+            return False
+        if self.due_date and self.due_date > date.today():
+            return False
+        return True
 
-    def mark_complete(self) -> None:
-        """Mark the task as completed."""
+    def mark_complete(self) -> Optional["Task"]:
+        """Mark the task as completed and repeat if recurring."""
         self.completed = True
+        if self.frequency not in {"daily", "weekly"}:
+            return None
+
+        interval = timedelta(days=1 if self.frequency == "daily" else 7)
+        new_due_date = (self.due_date or date.today()) + interval
+        repeated = Task(
+            title=self.title,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            category=self.category,
+            frequency=self.frequency,
+            deadline=self.deadline,
+            due_date=new_due_date,
+            start_time=self.start_time,
+            notes=self.notes,
+            completed=False,
+            pet=self.pet,
+            owner=self.owner,
+        )
+        if self.pet:
+            self.pet.add_task(repeated)
+        return repeated
 
     def assign(self, owner: "Owner", pet: "Pet") -> None:
         """Link the task to an owner and a pet."""
@@ -74,7 +104,8 @@ class Pet:
     def add_task(self, task: Task) -> None:
         """Assign a task to this pet."""
         task.pet = self
-        self.tasks.append(task)
+        if task not in self.tasks:
+            self.tasks.append(task)
 
     def remove_task(self, task: Task) -> None:
         """Remove a task from this pet."""
@@ -202,10 +233,43 @@ class Scheduler:
     def generate_plan(self) -> Schedule:
         """Create a daily schedule for available tasks."""
         source_tasks = [task for task in self.get_source_tasks() if task.is_required_today()]
-        ranked_tasks = self.rank_tasks(source_tasks)
+        filtered_tasks = self.filter_tasks(source_tasks, status="pending")
+        ranked_tasks = self.rank_tasks(filtered_tasks)
         selected_tasks = self.apply_constraints(ranked_tasks)
         scheduled = self.build_daily_schedule(selected_tasks)
         return scheduled
+
+    def _time_key(self, start_time: Optional[str]) -> int:
+        if not start_time:
+            return 24 * 60
+        try:
+            hour, minute = map(int, start_time.split(":"))
+            return hour * 60 + minute
+        except ValueError:
+            return 24 * 60
+
+    def sort_by_time(self, tasks: Optional[List[Task]] = None) -> List[Task]:
+        """Sort tasks by their scheduled start time."""
+        tasks = tasks if tasks is not None else self.get_source_tasks()
+        return sorted(tasks, key=lambda task: self._time_key(task.start_time))
+
+    def filter_tasks(
+        self,
+        tasks: Optional[List[Task]] = None,
+        status: Optional[str] = None,
+        pet_name: Optional[str] = None,
+    ) -> List[Task]:
+        """Return tasks matching completion status and/or pet name."""
+        tasks = tasks if tasks is not None else self.get_source_tasks()
+        if status:
+            status = status.lower()
+            if status == "completed":
+                tasks = [task for task in tasks if task.completed]
+            elif status == "pending":
+                tasks = [task for task in tasks if not task.completed]
+        if pet_name:
+            tasks = [task for task in tasks if task.pet and task.pet.name == pet_name]
+        return tasks
 
     def rank_tasks(self, tasks: Optional[List[Task]] = None) -> List[Task]:
         """Sort tasks by priority and duration."""
@@ -230,13 +294,37 @@ class Scheduler:
                 total += task.duration_minutes
         return selected
 
+    def detect_conflicts(self, tasks: Optional[List[Task]] = None) -> List[str]:
+        """Return a list of warnings for tasks that share the same start time."""
+        tasks = tasks if tasks is not None else self.get_source_tasks()
+        conflicts: Dict[str, List[Task]] = {}
+        for task in tasks:
+            if task.start_time:
+                conflicts.setdefault(task.start_time, []).append(task)
+
+        warnings: List[str] = []
+        for start_time, grouped in conflicts.items():
+            if len(grouped) > 1:
+                pets = ", ".join(task.pet.name if task.pet else "unknown" for task in grouped)
+                warnings.append(
+                    f"Conflict at {start_time}: {len(grouped)} tasks scheduled ({pets})."
+                )
+        return warnings
+
     def build_daily_schedule(self, tasks: List[Task]) -> Schedule:
         """Build the final Schedule object from selected tasks."""
         explanation = "Selected tasks based on priority and available time."
         active_pet = self.pet
         if not active_pet and self.owner.pets:
             active_pet = self.owner.pets[0]
-        return Schedule(date=date.today(), tasks=tasks, explanation=explanation, owner=self.owner, pet=active_pet)
+        sorted_tasks = self.sort_by_time(tasks)
+        return Schedule(
+            date=date.today(),
+            tasks=sorted_tasks,
+            explanation=explanation,
+            owner=self.owner,
+            pet=active_pet,
+        )
 
     def explain_choice(self, task: Task) -> str:
         """Explain why a task was chosen for the schedule."""
