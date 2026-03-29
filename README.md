@@ -45,3 +45,15 @@ pip install -r requirements.txt
 ## Smarter Scheduling
 
 PawPal+ now sorts tasks by scheduled start time, filters tasks by pet or completion status, handles daily and weekly recurring tasks, and detects simple start-time conflicts. These improvements help the owner see a clean plan and avoid scheduling collisions.
+
+## Testing PawPal+
+
+Run the automated tests with:
+
+```bash
+python -m pytest
+```
+
+The tests cover task completion, pet task assignment, chronological sorting, daily recurrence creation, and detection of duplicate start-time conflicts.
+
+**Confidence Level:** ★★★★☆
