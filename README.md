@@ -56,7 +56,7 @@ PawPal+ now sorts tasks by scheduled start time, filters tasks by pet or complet
 
 ## Demo
 
-<a href="./course_images/ai110/pawpal_demo.png" target="_blank">
+<a href="./course_images/ai110/demo streamlit.png" target="_blank">
   <img src="./course_images/ai110/pawpal_demo.png"
        title="PawPal App"
        alt="PawPal App"
