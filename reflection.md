@@ -47,8 +47,8 @@ Responsible for owner-level data like available scheduling time and preference u
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+- The scheduler considers owner available time, task priority, and task start time.
+- Priority determines which tasks are included first, and the time budget ensures the schedule fits the owner’s available minutes.
 
 **b. Tradeoffs**
 
@@ -61,13 +61,13 @@ Responsible for owner-level data like available scheduling time and preference u
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+- I used AI tools for design brainstorming, code generation, and validation.
+- Helpful prompts were those that asked for class relationships, method behavior, and test plans.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+- I rejected suggestions that added too much complexity to the scheduler, such as full overlap detection, in favor of a simpler conflict warning strategy.
+- I verified AI output by checking the generated code against the app requirements and running tests.
 
 ---
 
@@ -75,13 +75,13 @@ Responsible for owner-level data like available scheduling time and preference u
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+- I tested task completion, pet task assignment, time-based sorting, recurring daily task creation, and duplicate start time conflict detection.
+- These tests ensure the core scheduling behaviors work and that the new algorithmic features behave as expected.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+- I am confident at about 4 stars because the key behaviors are covered and the scheduler passes the automated suite.
+- Next, I would test overlapping task durations, multiple pet schedules, and invalid time input handling.
 
 ---
 
@@ -89,12 +89,14 @@ Responsible for owner-level data like available scheduling time and preference u
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+- The project came together with a clean separation between the data model and scheduling logic.
+- The UI now reflects the backend intelligence in a way that is easy to use.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+- I would improve conflict detection to handle overlapping durations, not just exact start times.
+- I would also add better task editing and persistence for the Streamlit interface.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+- I learned that being the lead architect means guiding AI suggestions with clear requirements and choosing the simplest design that meets the goals.

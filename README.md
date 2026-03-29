@@ -42,9 +42,21 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
+## Features
+
+- Sorting by task start time or priority
+- Filtering tasks by pet and completion status
+- Daily and weekly recurring task generation
+- Conflict detection for duplicate task start times
+- Schedule generation that respects owner time budget
+
 ## Smarter Scheduling
 
 PawPal+ now sorts tasks by scheduled start time, filters tasks by pet or completion status, handles daily and weekly recurring tasks, and detects simple start-time conflicts. These improvements help the owner see a clean plan and avoid scheduling collisions.
+
+## Demo
+
+<a href="/course_images/ai110/pawpal_demo.png" target="_blank"><img src='/course_images/ai110/pawpal_demo.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
 
 ## Testing PawPal+
 
